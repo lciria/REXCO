@@ -1,0 +1,33 @@
+% 1st variable (conditions) : rows
+% 2nd variable (groups or sessions) : collumns
+% subjects are averaged
+% spec data : frequencies X channels X trials (when 'savetrials' = 'on')
+% ersp data : time X frequencies X channels X trial
+
+%%%%%%%%% TONIC DESIGN %%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% spectral precomputation
+[STUDY ALLEEG] = std_precomp(STUDY, ALLEEG, 'channels', ...
+    'spec', 'on', 'savetrials','off','recompute','on','specparams',...
+    {'specmode','fft','epochlim',[0 1],'epochrecur',1,'logtrials','on',...
+    'nfreqs',40,'freqrange',[1 40]});
+
+% read spectra
+[STUDY, specdata, allfreqs, setinds] = std_readerp(STUDY, ALLEEG, 'datatype', 'spec',...
+    'channels', {ALLEEG(1).chanlocs.labels},...
+    'singletrials','off','freqrange',[1 40],'rmsubjmean','off','forceread','on');
+%%
+
+%%%%%%%%% PHASIC DESIGN %%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TF precomputation
+
+[STUDY ALLEEG] = std_precomp(STUDY, ALLEEG,'channels',...
+    'ersp', 'on', 'savetrials','off', 'recompute','on', 'erspparams',...
+    {'freqs', [4 40],'cycles', [3 0.8],'baseline',[-300 0], 'alpha',NaN,...
+    'mcorrect','fdr','baseboot',[-300 0],'winsize',500,'naccu',200,'nfreqs',40});
+
+% read TF 
+[STUDY, erspdata, alltimes, allfreqs, erspbase, ~, unitPower] = std_readersp(STUDY, ALLEEG,...
+    'channels',{ALLEEG(1).chanlocs.labels},'singletrials','off',...
+    'datatype','ersp','subbaseline','off','forceread','on');
